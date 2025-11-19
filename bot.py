@@ -15,14 +15,29 @@ async def precio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
     headers = {"Content-Type": "application/json"}
     r = requests.post(url, json=payload, headers=headers)
-
     data = r.json()
-    price = data["data"][0]["adv"]["price"]
 
-    await update.message.reply_text(f"💵 Precio USDT (BUY): {price} VES")
+    # Calculamos el promedio
+    prices = [float(item["adv"]["price"]) for item in data["data"]]
+    average_price = sum(prices) / len(prices)
+
+    # Formato de número con separador de miles y 2 decimales
+    formatted_price = f"{average_price:,.2f}".replace(",", "'")
+
+    # Mensaje profesional
+    message = (
+        f"💹 <b>Tasa Binance (USDT)</b>\n"
+        f"📊 Promedio P2P Venezuela\n\n"
+        f"💰 Precio: <b>{formatted_price} VES</b>\n"
+        f"🔄 Actualizado en tiempo real"
+    )
+
+    await update.message.reply_text(message, parse_mode='HTML')
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Bot activo. Usa /precio para ver el precio.")
+    await update.message.reply_text(
+        "🤖 Bot activo.\nUsa /precio para ver la tasa Binance actual."
+    )
 
 token = os.getenv("BOT_TOKEN")
 

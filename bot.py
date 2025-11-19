@@ -39,4 +39,5 @@ async def main():
     await app.updater.start_polling()  # Mantener el bot corriendo
     await app.idle()  # Esperar a que se detenga el bot
 
-if __n
+if __name__ == "__main__":
+    asyncio.run(main())

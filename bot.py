@@ -1,3 +1,32 @@
+Python
+
+import os
+import sys
+
+# --- BLOQUE DE DEPURACIÓN ---
+print("--------------------------------------------------")
+print("🔍 INICIANDO DIAGNÓSTICO DE VARIABLES DE ENTORNO")
+# Imprimimos TODAS las claves de las variables (NO los valores por seguridad)
+print(f"Variables disponibles en el sistema: {list(os.environ.keys())}")
+
+token_val = os.getenv("TOKEN")
+if token_val is None:
+    print("❌ ERROR CRÍTICO: Python dice que os.getenv('TOKEN') es None.")
+    print("   Posible causa: La variable no se inyectó o tiene otro nombre.")
+else:
+    # Imprimimos solo los primeros 5 caracteres para verificar sin revelar todo
+    print(f"✅ TOKEN encontrado. Comienza con: {token_val[:5]}...")
+    print(f"   Longitud del token: {len(token_val)}")
+print("--------------------------------------------------")
+# --- FIN BLOQUE DE DEPURACIÓN ---
+
+TOKEN = os.getenv("TOKEN")
+
+# ... resto de tu código (logging, imports, funciones) ...
+
+
+
+
 import os
 import logging
 from telegram import Update

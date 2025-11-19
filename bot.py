@@ -1,53 +1,43 @@
+import os
 import asyncio
 from telegram import Update
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    ContextTypes,
-)
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue
 
-import requests
+# Obtener token desde variables de entorno
+TOKEN = os.getenv("TOKEN")
 
-TOKEN = "TU_TOKEN_AQUI"
+if not TOKEN:
+    raise ValueError("No se encontró el token. Asegúrate de definir la variable de entorno 'TOKEN' en Railway.")
 
-# ----------------------
-# Funciones de comandos
-# ----------------------
+# Función para /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Bot iniciado correctamente!")
+    await update.message.reply_text("¡Hola! Soy tu bot funcionando en Railway 🚀")
 
-# ----------------------
-# Tarea periódica
-# ----------------------
+# Tarea periódica (cada 5 minutos)
 async def periodic_task(context: ContextTypes.DEFAULT_TYPE):
-    # Ejemplo de tarea periódica
-    print("Ejecutando tarea periódica...")
-    # Aquí puedes poner cualquier código que quieras ejecutar cada X segundos
-    # Ejemplo: requests.get("https://api.example.com/endpoint")
+    # Aquí puedes poner lo que quieras que haga tu bot periódicamente
+    print("Tarea periódica ejecutada")
 
-# ----------------------
-# Función principal
-# ----------------------
 async def main():
-    # Crear la aplicación del bot
+    # Crear la aplicación
     app = ApplicationBuilder().token(TOKEN).build()
 
-    # Comandos
+    # Agregar comando /start
     app.add_handler(CommandHandler("start", start))
 
-    # JobQueue seguro
-    if app.job_queue:
-        app.job_queue.run_repeating(periodic_task, interval=300, first=10)
-    else:
-        print("JobQueue no configurada correctamente")
+    # Configurar job queue
+    job_queue: JobQueue = app.job_queue
+    job_queue.run_repeating(periodic_task, interval=300, first=10)
 
     # Inicializar y arrancar el bot
     await app.initialize()
+    print("Bot inicializado y listo")
     await app.start()
-    await app.updater.start_polling()  # Para usar polling
-    await app.updater.idle()
+    await app.updater.start_polling()
+    await app.idle()
 
-# ----------------------
+if __name__ == "__main__":
+    asyncio.run(main())
 # Ejecutar bot
 # ----------------------
 if __name__ == "__main__":

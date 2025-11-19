@@ -1,9 +1,8 @@
 import requests
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Job
 import os
 
-# Variable global para almacenar el precio
 average_price_global = None
 
 async def actualizar_precio(context: ContextTypes.DEFAULT_TYPE):
@@ -32,11 +31,7 @@ async def precio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if average_price_global is None:
         await update.message.reply_text("⏳ Precio aún no disponible, intenta de nuevo en unos segundos.")
         return
-
-    # Formato de miles con 2 decimales
     formatted_price = f"{average_price_global:,.2f}".replace(",", "'")
-
-    # Mensaje profesional
     message = (
         f"💹 <b>Tasa Binance (USDT)</b>\n"
         f"📊 Promedio P2P Venezuela\n\n"
@@ -50,19 +45,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🤖 Bot activo.\nUsa /precio para ver la tasa Binance actual."
     )
 
-# TOKEN del bot desde variables de entorno
 token = os.getenv("BOT_TOKEN")
 
-# Configuración del bot
+# Creamos la aplicación
 app = ApplicationBuilder().token(token).build()
 
-# Agregar handlers
+# Handlers
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("precio", precio))
 
-# Configurar job queue para actualizar cada 5 minutos
-job_queue = app.job_queue
-job_queue.run_repeating(actualizar_precio, interval=300, first=0)  # 300s = 5 minutos
+# Agregamos job de actualización cada 5 minutos usando post_init
+async def post_init(application):
+    application.job_queue.run_repeating(actualizar_precio, interval=300, first=0)
 
-# Ejecutar el bot
+app.post_init = post_init
+
+# Ejecutamos el bot
 app.run_polling()

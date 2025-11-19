@@ -4,6 +4,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
 
+# Variable global para el precio
 average_price_global = None
 
 async def actualizar_precio():
@@ -39,22 +40,22 @@ async def precio(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🤖 Bot activo.\nUsa /precio para ver la tasa Binance actual.")
 
+# Token
 token = os.getenv("BOT_TOKEN")
 app = ApplicationBuilder().token(token).build()
 
+# Handlers
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("precio", precio))
 
-# Función para actualizar el precio cada 5 minutos
+# Tarea que actualiza cada 5 minutos
 async def job_runner():
     while True:
         await actualizar_precio()
-        await asyncio.sleep(300)
+        await asyncio.sleep(300)  # 5 minutos
 
 async def main():
-    # Lanzamos la tarea en paralelo
-    asyncio.create_task(job_runner())
+    asyncio.create_task(job_runner())  # Lanzamos la tarea paralela
     await app.run_polling()
 
-# Ejecutamos
 asyncio.run(main())

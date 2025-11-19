@@ -1,44 +1,42 @@
 import os
 import asyncio
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, JobQueue
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    ContextTypes,
+)
 
-# Obtener token desde variables de entorno
+# Obtener el token desde la variable de entorno
 TOKEN = os.getenv("TOKEN")
-
 if not TOKEN:
     raise ValueError("No se encontró el token. Asegúrate de definir la variable de entorno 'TOKEN' en Railway.")
 
-# Función para /start
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Función de inicio / comando /start
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("¡Hola! Soy tu bot funcionando en Railway 🚀")
 
-# Tarea periódica (cada 5 minutos)
-async def periodic_task(context: ContextTypes.DEFAULT_TYPE):
-    # Aquí puedes poner lo que quieras que haga tu bot periódicamente
-    print("Tarea periódica ejecutada")
+# Tarea periódica (ejemplo)
+async def periodic_task(context: ContextTypes.DEFAULT_TYPE) -> None:
+    chat_id = os.getenv("CHAT_ID")  # Opcional: definir un chat específico
+    if chat_id:
+        await context.bot.send_message(chat_id=chat_id, text="Mensaje periódico desde el bot.")
 
 async def main():
-    # Crear la aplicación
+    # Crear la aplicación con el token
     app = ApplicationBuilder().token(TOKEN).build()
 
-    # Agregar comando /start
+    # Comandos
     app.add_handler(CommandHandler("start", start))
 
-    # Configurar job queue
-    job_queue: JobQueue = app.job_queue
-    job_queue.run_repeating(periodic_task, interval=300, first=10)
+    # JobQueue para tareas periódicas
+    app.job_queue.run_repeating(periodic_task, interval=300, first=10)  # cada 5 minutos
 
-    # Inicializar y arrancar el bot
+    # Inicializar y correr el bot
     await app.initialize()
-    print("Bot inicializado y listo")
     await app.start()
-    await app.updater.start_polling()
-    await app.idle()
+    print("Bot corriendo en Railway...")
+    await app.updater.start_polling()  # Mantener el bot corriendo
+    await app.idle()  # Esperar a que se detenga el bot
 
-if __name__ == "__main__":
-    asyncio.run(main())
-# Ejecutar bot
-# ----------------------
-if __name__ == "__main__":
-    asyncio.run(main())
+if __n
